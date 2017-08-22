@@ -24,6 +24,26 @@ namespace AirlinePlanner.Models
       return _cityName;
     }
 
+    public override bool Equals(System.Object otherCity)
+    {
+      if (!(otherCity is City))
+      {
+        return false;
+      }
+      else
+      {
+        City newCity = (City) otherCity;
+        bool idEquality = (this.GetId() == newCity.GetId());
+        bool nameEquality = (this.GetCityName() == newCity.GetCityName());
+        return (idEquality && nameEquality);
+      }
+    }
+
+    public override int GetHashCode()
+    {
+      return this.GetCityName().GetHashCode();
+    }
+
     public static List<City> GetAll()
     {
       MySqlConnection conn = DB.Connection();
@@ -49,6 +69,23 @@ namespace AirlinePlanner.Models
       //   conn.Dispose();
       // }
       return allCities;
+    }
+
+    public void Save()
+    {
+      MySqlConnection conn = DB.Connection();
+      conn.Open();
+      var cmd = conn.CreateCommand() as MySqlCommand;
+      cmd.CommandText = @"INSERT INTO cities (city_name) VALUES (@city_name);";
+
+      MySqlParameter cityName = new MySqlParameter();
+      cityName.ParameterName = "@city_name";
+      cityName.Value = this._cityName;
+      cmd.Parameters.Add(cityName);
+
+      cmd.ExecuteNonQuery();
+      _id = (int) cmd.LastInsertedId;
+      conn.Close();
     }
 
   }
